@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Go
+/bin/
+*.exe
+*.test
+*.out
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Audit inputs and outputs: never commit real customer data
+# (RACF unloads, SMF extracts, directory dumps, generated reports)
+samples/private/
+*.dbunload
+*.dbu
+*.smf
+*.irrdbu00
+reports/
+out/
+*.report.json
+*.report.csv
+
+# Per-tool config with real hostnames, LPAR names, userids
+targets.yaml

@@ -1,0 +1,93 @@
+# Copy to targets.yaml (gitignored) and fill in. Passwords are NEVER stored here; they
+# are read from the environment variables named below.
+#
+#   export HMC_USERID=...        HMC_PASSWORD=...
+#   export SUT_VALID_PW=...      (name must match valid_password_env for the target)
+
+targets:
+
+  zos_test:
+    flavor: zos
+    log_source: hmc              # hmc | syslog-tcp
+
+    hmc:
+      host: hmc1.lab.example
+      verify_cert: false         # true, or a path to a CA bundle
+      cpc: CPC1
+      partition: ZOSTEST         # LPAR name (classic mode) or partition name (DPM)
+      mode: classic              # classic | dpm
+      poll_interval: 0.2         # seconds between OS-message polls
+      load:
+        from_profile: false      # true = activate from the activation profile and let it IPL
+        load_address: "0A82"     # used when from_profile is false
+        load_parameter: "0A82SM"
+
+    tn3270:
+      host: 10.1.1.20
+      port: 23
+      tls: false
+      dialog: tso_uss            # tso_uss | zvm_logo, or define dialog_steps below
+      connect_timeout: 8
+      classify:
+        success: ["READY", "ISPF PRIMARY OPTION MENU", "LOGON IN PROGRESS"]
+        reject:  ["IKJ56420I", "IKJ56421I", "ICH408I", "PASSWORD NOT AUTHORIZED",
+                  "NOT AUTHORIZED TO USE THIS APPLICATION"]
+
+    # Optional: override the built-in logon dialog with explicit steps. Placeholders
+    # {user} and {password} are substituted per attempt.
+    # Step keys: wait_field, wait_text (+timeout), send, fill_after (+value), tab, pf,
+    # enter, settle.
+    # dialog_steps:
+    #   - {wait_field: true}
+    #   - {send: "LOGON APPLID(TSO)", enter: true}
+    #   - {wait_text: "ENTER USERID", timeout: 12}
+    #   - {send: "{user}", enter: true}
+    #   - {wait_text: "PASSWORD", timeout: 12}
+    #   - {fill_after: "PASSWORD", value: "{password}", enter: true}
+    #   - {settle: 2.5}
+
+    credentials:
+      valid_user: TESTUSR
+      valid_password_env: SUT_VALID_PW
+      wrong_password: "WrongPw#9471"
+      bogus_user: ZZNOEXIST
+      bogus_password: "Junk#8830"
+
+    readiness_markers:
+      - {name: "RACF active",    pattern: "ICH508I .*RACF ACTIVE"}
+      - {name: "RACF init done", pattern: "ICH502I"}
+    listener_markers:
+      - {name: "TN3270 device up", pattern: "EZZ6003I TELNET DEVICE .* NOW ACTIVE"}
+      - {name: "TN3270 port up",   pattern: "EZZ6047I TELNET PORT .* ON .* ACTIVE"}
+      - {name: "TCPIP init done",  pattern: "EZZ4313I IP SYSTEM Initialization COMPLETE"}
+
+  zvm_test:
+    flavor: zvm
+    log_source: hmc
+    hmc:
+      host: hmc1.lab.example
+      verify_cert: false
+      cpc: CPC1
+      partition: ZVMTEST
+      mode: classic
+      load:
+        from_profile: true
+    tn3270:
+      host: 10.1.1.21
+      port: 23
+      dialog: zvm_logo
+      classify:
+        success: ["Ready;", "z/VM", "LOGON AT", "RECONNECTED AT"]
+        reject:  ["HCPLGA050E", "HCPLGB054E", "HCPLGA054E", "not in CP directory"]
+    credentials:
+      valid_user: TESTVM
+      valid_password_env: SUT_VM_PW
+      wrong_password: "WrongPw#5521"
+      bogus_user: NOSUCHVM
+      bogus_password: "Junk#2210"
+    # z/VM RACF (RACFVM) readiness markers -- CONFIRM THESE against a real z/VM IPL log.
+    readiness_markers:
+      - {name: "RACF/VM manager (verify)", pattern: "RPIMGR[0-9]{3}"}
+      - {name: "RACFVM autolog (verify)",  pattern: "AUTO LOGON.*RACFVM"}
+    listener_markers:
+      - {name: "TCPIP up (verify)",        pattern: "TCP/IP.*[Ii]nitializ"}

@@ -1,0 +1,9 @@
+# pip install -r requirements.txt
+#
+# Also required, outside pip:
+#   s3270 on PATH        macOS: brew install x3270      Linux: apt/dnf install x3270 (or s3270)
+#   Tkinter (GUI only)   ships with python.org builds;  Homebrew Python: brew install python-tk
+#
+zhmcclient>=1.16
+py3270>=0.4.0
+PyYAML>=6.0
