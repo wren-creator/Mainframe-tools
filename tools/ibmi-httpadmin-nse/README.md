@@ -70,11 +70,24 @@ same as any other nmap http script.
 
 ## Caveats
 
-The unauthenticated side has been run against a real IBM i (pub400.com): the
-console answers 401 with `Server: Apache` and realm `HTTP Admin`, and the script
-recognizes that. The About page layout is still what web3270's mock serves, and
-IBM has not published the real vulnerable parameter, so treat the version and
-fix read as unconfirmed against real hardware until it has been run signed in. Run it against systems you are authorized to test, with the
+Run against a real IBM i (pub400.com), with these results:
+
+- The unauthenticated side works. The console answers 401 with `Server: Apache`
+  and realm `HTTP Admin`, and the script recognizes that.
+- The real console is not the mock. Signing in with an ordinary profile passes
+  Basic auth but gets a 200 carrying `ZUI_50044`: the profile needs `*IOSYSCFG`
+  and `*ALLOBJ` (or an explicit grant) to use the interface. The mock lets any
+  enabled profile in. So on real hardware this check needs a profile the console
+  authorizes, and the web3270 mock overstates how reachable the console is to a
+  low-privilege user.
+- `/HTTPAdmin/about` and its "OS release / HTTP Server Admin fix" table are the
+  mock's. The real console is a session-based app and does not serve that page,
+  so the version and fix read is **unconfirmed on real hardware**. The script
+  reports the console's own message instead of guessing.
+
+IBM has not published the real vulnerable parameter for CVE-2026-96119, so the
+fix status can only be trusted once the real About page location is found with an
+authorized profile. Run it against systems you are authorized to test, with the
 ports named in your rules of engagement.
 
 ## Tests

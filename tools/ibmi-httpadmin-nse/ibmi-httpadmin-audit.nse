@@ -162,7 +162,13 @@ action = function(host, port)
       },
       bypass_cache = true,
     })
-    if about and about.status == 200 then
+    -- The real console answers 200 with a ZUI_ message in the page when it
+    -- refuses the profile (ZUI_50044: needs *IOSYSCFG and *ALLOBJ), so a 200
+    -- is not proof the About page was served.
+    local zui_code, zui_text = (about and about.body or ""):match("(ZUI_%d+):%s*([^<]+)")
+    if zui_code then
+      add("INFO", ("Console accepted the sign-in but would not serve version information (%s: %s). Fix status needs a profile the console authorizes, and the real About page path is unconfirmed."):format(zui_code, (zui_text:gsub("%s+", " "):gsub("%s+$", ""))))
+    elseif about and about.status == 200 then
       local level, fix = parse_about(about.body or "")
       facts.os_release = level
       facts.admin_fix = fix

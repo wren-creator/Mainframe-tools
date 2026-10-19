@@ -55,6 +55,11 @@ start real401
 o=$(run 2001)
 expect "real IBM i banner (Apache, HTTP Admin realm) is recognized" "$o" "cleartext port 2001"
 
+start zui
+o=$(run 2001 "$CRED")
+expect "real console refusing a low-authority profile: reports ZUI_50044" "$o" "ZUI_50044"
+reject "real console refusal is not read as 'fix status unknown'"          "$o" "did not report a fix status"
+
 start other
 o=$(run 2001 "$CRED")
 reject "non-IBM i web server: stays quiet" "$o" "ibmi-httpadmin-audit"

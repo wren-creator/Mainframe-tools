@@ -13,6 +13,16 @@ if (mode === 'real401') {
     r.writeHead(401, { Server: 'Apache', 'WWW-Authenticate': 'Basic realm="HTTP Admin"', 'Content-Type': 'text/html' });
     r.end('<H1>Authorization Required</H1>');
   }).listen(2001, '127.0.0.1', () => console.log('ready'));
+} else if (mode === 'zui') {
+  // Real console: Basic auth passes, but a profile without *ALLOBJ and
+  // *IOSYSCFG gets a 200 carrying ZUI_50044 (seen on pub400.com).
+  http.createServer((q, r) => {
+    if (!q.headers.authorization) {
+      r.writeHead(401, { Server: 'Apache', 'WWW-Authenticate': 'Basic realm="HTTP Admin"' }); return r.end('x');
+    }
+    r.writeHead(200, { Server: 'Apache', 'Content-Type': 'text/html' });
+    r.end("<html><body><center><p><strong>ZUI_50044: IBM i user profile WREN01 does not have *IOSYSCFG and *ALLOBJ authorities or has not been granted permission which is required to use the administration interface of <i>IBM HTTP Server for i.</i></strong></center></body></html>");
+  }).listen(2001, '127.0.0.1', () => console.log('ready'));
 } else if (mode === 'other') {
   http.createServer((q, r) => { r.writeHead(200, { Server: 'nginx' }); r.end('hi'); }).listen(2001, '127.0.0.1', () => console.log('ready'));
 } else {
