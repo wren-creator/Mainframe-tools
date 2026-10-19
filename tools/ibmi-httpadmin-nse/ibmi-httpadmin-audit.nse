@@ -175,7 +175,11 @@ action = function(host, port)
         add("INFO", "About page did not report a fix status, so patch level is unknown.")
       end
     elseif about and about.status then
-      add("INFO", ("About page returned HTTP %d for the supplied profile, so version and fix status could not be read."):format(about.status))
+      -- A real IBM i says why it refused ("password expired", "authentication
+      -- failed"), and the fix for each is different, so pass the reason on.
+      local why = (about.body or ""):match("</H1>%s*(.-)%s*</[Bb][Oo][Dd][Yy]>")
+      why = why and why:gsub("%s+", " ")
+      add("INFO", ("About page returned HTTP %d for the supplied profile%s, so version and fix status could not be read."):format(about.status, why and why ~= "" and (' ("' .. why .. '")') or ""))
     else
       add("INFO", "Could not read the About page.")
     end
