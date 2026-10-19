@@ -31,6 +31,8 @@ Short, actionable entries. `[ ]` not started, `[~]` in progress, `[x]` landed.
 
 ## Network / TN3270
 
+- [x] nmap script for the IBM i HTTP Admin GUI (2001/2010), CVE-2026-96119 fix check
+  (`tools/ibmi-httpadmin-nse/`). Next: run against a real IBM i, add TLS protocol version
 - [ ] Port and TLS posture check for TN3270 / TN3270E endpoints
 - [ ] Flag cleartext 3270 exposure and weak cipher suites
 - [ ] SSH config audit for the Linux on Z fleet
