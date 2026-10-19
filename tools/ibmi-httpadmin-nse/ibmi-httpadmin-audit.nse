@@ -143,7 +143,11 @@ action = function(host, port)
 
   -- Only treat it as the IBM i console when it looks like one. A random web
   -- server on 2001 should not get a finding it did not earn.
+  -- A real IBM i answers 401 with "Server: Apache" and realm "HTTP Admin"
+  -- (seen on pub400.com), while the web3270 mock says "IBM HTTP Server for
+  -- i". Accept both. The realm is the reliable tell, the Server header is not.
   local looks_ibmi = (server and server:find("IBM HTTP Server", 1, true))
+    or (realm and realm:find("HTTP Admin", 1, true))
     or (realm and realm:find("HTTP Server Administration", 1, true))
     or (resp.body and resp.body:find("IBM Web Administration for i", 1, true))
   if not looks_ibmi then

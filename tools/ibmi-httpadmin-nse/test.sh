@@ -51,6 +51,10 @@ o=$(run 2001,2010 "$CRED")
 reject "patched: no missing-fix finding" "$o" "not installed"
 expect "patched: fix reported"           "$o" "fix reported as SJ11643"
 
+start real401
+o=$(run 2001)
+expect "real IBM i banner (Apache, HTTP Admin realm) is recognized" "$o" "cleartext port 2001"
+
 start other
 o=$(run 2001 "$CRED")
 reject "non-IBM i web server: stays quiet" "$o" "ibmi-httpadmin-audit"

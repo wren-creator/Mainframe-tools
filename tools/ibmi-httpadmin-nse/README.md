@@ -70,10 +70,11 @@ same as any other nmap http script.
 
 ## Caveats
 
-The About page layout is what web3270's mock serves. IBM has not published the
-real vulnerable parameter, and nobody has pointed this at a production IBM i
-yet, so treat the version and fix read as unconfirmed against real hardware
-until it has been. Run it against systems you are authorized to test, with the
+The unauthenticated side has been run against a real IBM i (pub400.com): the
+console answers 401 with `Server: Apache` and realm `HTTP Admin`, and the script
+recognizes that. The About page layout is still what web3270's mock serves, and
+IBM has not published the real vulnerable parameter, so treat the version and
+fix read as unconfirmed against real hardware until it has been run signed in. Run it against systems you are authorized to test, with the
 ports named in your rules of engagement.
 
 ## Tests

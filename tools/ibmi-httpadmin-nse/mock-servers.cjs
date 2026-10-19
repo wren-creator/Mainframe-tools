@@ -7,7 +7,13 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const [, , bridge, key, cert, mode] = process.argv;
-if (mode === 'other') {
+if (mode === 'real401') {
+  // What a real IBM i (pub400.com) sends: Apache banner, "HTTP Admin" realm.
+  http.createServer((q, r) => {
+    r.writeHead(401, { Server: 'Apache', 'WWW-Authenticate': 'Basic realm="HTTP Admin"', 'Content-Type': 'text/html' });
+    r.end('<H1>Authorization Required</H1>');
+  }).listen(2001, '127.0.0.1', () => console.log('ready'));
+} else if (mode === 'other') {
   http.createServer((q, r) => { r.writeHead(200, { Server: 'nginx' }); r.end('hi'); }).listen(2001, '127.0.0.1', () => console.log('ready'));
 } else {
   const ha = require(path.join(bridge, 'mock-lpar', 'mock-as400-httpadmin.js'));
