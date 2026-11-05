@@ -6,6 +6,7 @@ Each row is a standalone tool. Click into its directory for the full README.
 |------|--------|----------|--------------|--------|
 | [ipl-auth-race](ipl-auth-race/) | z/OS, z/VM | Python | Drives an IPL and checks whether the TN3270 listener authenticates before RACF is up, or fails closed. GUI + client HTML report. | Scaffolded, needs env tuning |
 | [ibmi-httpadmin-nse](ibmi-httpadmin-nse/) | IBM i | Lua (nmap NSE) | Read-only check of the HTTP Server Administration GUI on 2001/2010: exposure, cert, and (with a profile) whether the CVE-2026-96119 fix is installed. | Tested on mock only |
+| [jes-spool-triage](jes-spool-triage/) | RACF, z/OS | Python (+ scaffolded REXX/JCL collector) | Scans a JES spool dump for RACF access signals, batch RACF commands, and exposed credentials before you run your own RACF unload. | Scanner tested; SDSF collector scaffolded, not validated live |
 
 ## Adding a tool
 

@@ -4,6 +4,10 @@ Short, actionable entries. `[ ]` not started, `[~]` in progress, `[x]` landed.
 
 ## RACF / z/OS
 
+- [x] JES spool triage: scan a wide-open JES pool for RACF access signals,
+  batch RACF commands, and exposed credentials before running your own
+  RACF unload. Scanner tested; SDSF REXX collector scaffolded only, needs
+  validation against a live session. (`tools/jes-spool-triage/`)
 - [~] IPL auth-race detector: does the TN3270 listener authenticate before RACF is up, or
   fail closed? Drives a real IPL via the HMC, correlates probes against console markers.
   GUI plus client HTML report. z/VM covered by the same tool. (`tools/ipl-auth-race/`)
