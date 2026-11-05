@@ -48,5 +48,4 @@ See [docs/ROADMAP.md](docs/ROADMAP.md).
 ## Community and contact
 
 - Slack community: britleydev.slack.com
-- Consulting and speaking: https://britleyhoffconsulting.com
 - Contact: britleyhoff@britleyhoffconsulting.com
