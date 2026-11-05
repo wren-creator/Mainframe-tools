@@ -85,3 +85,23 @@ def test_render_text_report_sorts_critical_first():
 
 def test_render_text_report_handles_empty():
     assert jst.render_text_report([]) == "No signals found in this dump.\n"
+
+
+def test_summarize_counts_jobs_and_findings():
+    jobs, findings = jst.load(SAMPLE)
+    summary = jst.summarize(jobs, findings)
+    assert summary["total_jobs"] == 6
+    assert summary["jobs_with_output"] == 6
+    assert summary["jobs_with_no_output"] == 0
+    assert summary["jobs_with_findings"] == 4  # FC1NSLRU, SECADM3, PARMUPD1, FTPNITE1
+    assert summary["total_findings"] == len(findings)
+    assert summary["findings_by_severity"]["critical"] == 2
+
+
+def test_summarize_handles_job_with_no_dd_blocks():
+    jobs = [jst.JobBlock("EMPTYJOB", "JOB1", "OWNER1")]
+    summary = jst.summarize(jobs, [])
+    assert summary["total_jobs"] == 1
+    assert summary["jobs_with_output"] == 0
+    assert summary["jobs_with_no_output"] == 1
+    assert summary["jobs_with_findings"] == 0

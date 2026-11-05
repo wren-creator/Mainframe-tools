@@ -227,11 +227,36 @@ def scan_job(job: JobBlock):
     return findings
 
 
-def scan_dump(path: Path):
+def load(path: Path):
+    jobs = parse_dump(path)
     findings = []
-    for job in parse_dump(path):
+    for job in jobs:
         findings.extend(scan_job(job))
+    return jobs, findings
+
+
+def scan_dump(path: Path):
+    _, findings = load(path)
     return findings
+
+
+def summarize(jobs, findings):
+    jobs_with_output = sum(1 for j in jobs if any(j.dds.values()))
+    jobs_with_findings = len({(f.jobname, f.jobid) for f in findings})
+    by_category = {}
+    by_severity = {}
+    for f in findings:
+        by_category[f.category] = by_category.get(f.category, 0) + 1
+        by_severity[f.severity] = by_severity.get(f.severity, 0) + 1
+    return {
+        "total_jobs": len(jobs),
+        "jobs_with_output": jobs_with_output,
+        "jobs_with_no_output": len(jobs) - jobs_with_output,
+        "jobs_with_findings": jobs_with_findings,
+        "total_findings": len(findings),
+        "findings_by_category": by_category,
+        "findings_by_severity": by_severity,
+    }
 
 
 def render_text_report(findings):
@@ -257,11 +282,21 @@ def main(argv=None):
     ap.add_argument("--json", type=Path, help="also write findings as JSON to this path")
     args = ap.parse_args(argv)
 
-    findings = scan_dump(args.dump)
+    jobs, findings = load(args.dump)
+    summary = summarize(jobs, findings)
+
+    sys.stdout.write(
+        f"Scanned {summary['total_jobs']} jobs "
+        f"({summary['jobs_with_output']} with captured output, "
+        f"{summary['jobs_with_no_output']} with none); "
+        f"{summary['jobs_with_findings']} jobs produced "
+        f"{summary['total_findings']} findings.\n\n"
+    )
     sys.stdout.write(render_text_report(findings))
 
     if args.json:
-        args.json.write_text(json.dumps([asdict(f) for f in findings], indent=2))
+        payload = {"summary": summary, "findings": [asdict(f) for f in findings]}
+        args.json.write_text(json.dumps(payload, indent=2))
         print(f"\nWrote {len(findings)} findings to {args.json}")
 
     return 0

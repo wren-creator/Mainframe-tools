@@ -79,29 +79,77 @@ Never commit a real dump. `samples/sample_spool_dump.txt` is sanitized
 (fake job names, fake credential) and is what the format above looks
 like filled in.
 
+### At scale (hundreds or thousands of jobs)
+
+The manual path (`S` to open a job, page through DDs with `PF7`/`PF8`,
+`F3` back, repeat) does not scale to a pool that size -- it's the same
+one-job-at-a-time walk whether you're doing it by hand or dictating it
+to a screen-scraper, just slower by orders of magnitude than letting
+SDSF enumerate its own job table. Two things worth trying on the live
+pool, in order:
+
+1. **SDSF's own bulk print.** Some SDSF releases let you mark several
+   rows on `ST` (or just issue `PRINT ALL` while `PREFIX=*/OWNER=*` is
+   filtering the panel) and write every selected job's output to one
+   sequential dataset in a single operation, no per-job browsing. If
+   that works on your system, download the resulting dataset and write
+   a small converter to turn its banner format into the `===JOB===`/
+   `===DD===` shape above -- paste me a sanitized sample of what it
+   actually looks like and I'll write that converter against the real
+   format instead of guessing at it.
+2. **The REXX collector**, if (1) isn't available or doesn't scale far
+   enough. It runs the `ST`/browse walk natively through SDSF's own
+   API in one batch job instead of one 3270 round trip per job, so
+   1000+ jobs finishes in minutes server-side rather than hours of
+   screen navigation. Submit `SCANSPL.jcl` and send back whatever
+   `SYSTSPRT`/job log output you get -- real error messages from your
+   system are what the two `TUNE THIS` sections in `SCANSPL.rexx`
+   actually need to get fixed, not more guessing.
+
+Jobs with no held output at all are expected and handled: the scanner
+just records a job header with no findings (see
+`test_summarize_handles_job_with_no_dd_blocks` in the test suite).
+
 ## Running it
 
 ```
 python3 scan/jes_spool_triage.py path/to/spool_dump.txt
 python3 scan/jes_spool_triage.py path/to/spool_dump.txt --json findings.json
+python3 scan/customer_report.py findings.json --customer "Acme Corp" -o report.md
 ```
 
 No third-party dependencies -- standard library only.
 
 ## Output
 
-A text report to stdout, sorted critical-first, one finding per line
-plus the matched text and why it was flagged:
+`jes_spool_triage.py` prints a one-line scope summary (jobs visible,
+jobs with captured output, jobs that produced findings), then a text
+report to stdout, sorted critical-first, one finding per line plus the
+matched text and why it was flagged:
 
 ```
+Scanned 1247 jobs (812 with captured output, 435 with none); 37 jobs produced 54 findings.
+
 [CRITICAL] CREDENTIAL_STRING            FTPNITE1/JOB09901 (owner=BATCHID1) SYSIN:3
     PASS=NotARealSecret123
     -> Looks like an inline credential (PARM/SYSIN/SYSTSIN/FTP script). ...
 ```
 
-`--json` writes the same findings as a JSON array for pasting into a
-report. Both the dump and any JSON output you keep belong under
+`--json` writes `{"summary": {...}, "findings": [...]}` -- the full,
+unredacted detail, for your own working notes.
+
+`customer_report.py` takes that JSON and renders a Markdown write-up
+grouped by category, with a plain-language "why it matters" and a
+remediation pointer per category (JESSPOOL class, dataset profiles,
+credential rotation, etc.) instead of a raw per-line dump. Credential
+values are redacted by default (`USER=██████`) with the job/DD/line
+location kept so the finding is still traceable and actionable --
+pass `--no-redact` if you specifically want raw values in that copy.
+
+Both the dump and any JSON/report output you keep belong under
 `samples/private/` or `reports/`, which `.gitignore` already excludes.
+The customer report is still engagement data -- sanitize or handle it
+per your data-handling agreement before it leaves your hands.
 
 ## Checks performed
 
