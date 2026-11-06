@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "- Bash(gh pr merge:*\\)\r  - Bash\\(gh pr view:*\\)\r  - Bash\\(gh api:*)"
+    ]
+  }
+}
